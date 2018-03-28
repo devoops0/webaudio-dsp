@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Signalprozessoren Audio Demo</title>
+		<link rel="stylesheet" href="assets/css/bootstrap/bootstrap.min.css">
+		<link rel="stylesheet" href="assets/css/bootstrap/bootstrap-grid.min.css">
+		<link rel="stylesheet" href="assets/css/bootstrap/bootstrap-reboot.min.css">
+		<link rel="stylesheet" href="assets/css/bootstrap/plugins/bootstrap-slider.min.css">
+		<link rel="stylesheet" href="assets/css/fontawesome/css/fontawesome-all.min.css">
+		<link rel="stylesheet" href="assets/css/style.css">
+	</head>
+	<body onload="init()">
+		<script src="assets/js/jquery/jquery-3.3.1.min.js"></script>
+		<script src="assets/js/jquery/jquery-3.2.1.slim.min.js"></script>
+		<script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+		<script src="assets/js/bootstrap/plugins/bootstrap-slider.min.js"></script>
+        <script src="assets/js/bufferloader.js"></script>
+		<script src="assets/js/audio.js"></script>
+		<section id="main">
+        <div class="row">
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+            <div class="col-xs-6 col-md-6 col-ld-6">
+                <h1>Signalprozessoren Audio Demo</h1>
+            </div>
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+        </div>
+
+		<div class="row">
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+
+            <div class="col-xs-6 col-md-6 col-ld-6">
+				<div class="btn-group">
+					<button type="button" class="btn btn-danger dropdown-toggle" id="btn-soundSelect" data-toggle="dropdown" aria-haspopu="true" aria-expanded="false">
+						Sound w&aumlhlen
+					</button>
+					<div id="soundList" class="dropdown-menu">
+                        <!-- this is filled automatically on import of the sounds -->
+					</div>
+				</div>
+
+                <div id="checkboxes">
+                <label class="customRadioContainer">Saturation (Clipping)
+                    <input type="radio" id="saturation" name="audioMethod" checked>
+                    <span class="customRadio"></span>
+                </label>
+                <label class="customRadioContainer">Overflow (Wrapping)
+                    <input type="radio" id="overflow" name="audioMethod">
+                    <span class="customRadio"></span>
+                </label>
+                </div>
+
+                <div class="form-group" id="amp">
+                    <input id="ampslider" type="text" data-slider-min="0" data-slider-max="10" data-slider-step="0.1" data-slider-value="1" data-slider-orientation="vertical" data-slider-id="ampsliderc"/>
+                    <label for="ampslider">Amplification: <span id="amp-value">1</span>x</label>
+                </div>
+
+                <div id="wrapper-default-samplerate">
+                    <span>Default Samplerate: <br /><span id="default-samplerate"></span></span>
+                </div>
+
+			</div>
+            
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+
+		</div>
+
+        <div class="row">
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+
+            <div class="col-xs-6 col-md-6 col-ld-6">
+                <div id="playButtons">
+                    <button class="btn btn-danger" id="btn-playPause" onclick="playPauseSound()"><i class="fas fa-play"></i></button>
+                    <button class="btn btn-danger" id="btn-stop" onclick="stopSound()"><i class="fas fa-stop"></i></button>
+                </div>
+
+                <div class="form-group" id="playBackRate">
+                    <input id="pbRateSlider" type="text" data-slider-min="0" data-slider-max="10" data-slider-step="0.1" data-slider-value="1" data-slider-id="pbRateSliderc"/>
+                    <label for="pbRateSlider">Playback Rate: <span id="pbRate">1</span>x</label>
+                </div>
+
+                <div class="form-group" id="wrapper-sampleRate">
+                    <label for="sampleRate">Samplerate (Hz): </label>
+					<input id="input-sampleRate" type="text" class="form-control"/>
+					<button class="btn btn-danger" id="btn-resample" onclick="resampleSound()">Resample</button>
+                </div>
+            </div>
+
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+
+            <div class="col-xs-6 col-md-6 col-ld-6">
+				<div class="btn-group">
+					<button type="button" class="btn btn-danger dropdown-toggle" id="btn-graphSelect" data-toggle="dropdown" aria-haspopu="true" aria-expanded="false">
+						Graph w&aumlhlen
+					</button>
+					<div id="graphChooser" class="dropdown-menu">
+                        <p class="dropdown-item">sinewave</p>
+                        <p class="dropdown-item">frequencybars</p>
+					</div>
+				</div>
+            </div>
+
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+        </div>
+
+		<div class="row">
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+            <div class="col-xs-6 col-md-6 col-ld-6">
+			<!-- <canvas id="wave" width="600" height="200"></canvas> -->
+			<canvas id="wave"></canvas>
+            </div>
+            <div class="col-xs-3 col-md-3 col-ld-3"></div>
+		</div>
+
+		</section>
+	</body>
+</html>

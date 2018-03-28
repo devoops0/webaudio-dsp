@@ -1,0 +1,131 @@
+.slider.slider-vertical {
+    height: 100px;
+    margin-top: 20px;
+}
+
+.btn-danger {
+    border-color: #DF0134;
+    background-color: #DF0134;
+}
+
+.padTop {
+    padding-top: 2.5em;
+}
+
+.form-check-label {
+    padding-top: 0.7em;
+    margin-left: 0.5em;
+}
+
+.slider-handle {
+    background: #DF0134;
+}
+
+#amp, #sample {
+	/* max-width: 200px; */
+}
+
+input[type="text"] {
+	max-width: 5rem;
+}
+
+input[type="text"]:active, input[type="text"]:focus {
+	border: 1px solid #DF0134; 
+}
+
+.form-control:focus {
+	box-shadow: none;
+	border: 1px solid #DF0134; 
+	transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+::selection {
+	background: #DF0134; 
+	color: #FFF;
+}
+
+::-moz-selection {
+	background: #DF0134; 
+	color: #FFF;
+}
+
+.customRadioContainer {
+	display: block;
+	position: relative;
+	padding-left: 35px;
+	margin-bottom: 12px;
+	cursor: pointer;
+	/* font-size: 22px; */
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.customRadioContainer input {
+	position: absolute;
+	opacity: 0;
+}
+
+.customRadio {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 20px;
+	width: 20px;
+	background-color: #DDD;
+	border-radius: 50%;
+}
+
+.customRadioContainer:hover input ~ .customRadio {
+	background-color: #EEE;
+}
+
+.customRadioContainer:hover input:checked ~ .customRadio {
+	background-color: #CCC;
+}
+
+.customRadioContainer input:checked ~ .customRadio {
+	background-color: #DF0134;
+}
+
+.customRadio:after {
+	content: "";
+	position: absolute;
+	display: none;
+}
+
+.customRadioContainer input:checked ~ .customRadio:after {
+	display: block;
+}
+
+.customRadioContainer .customRadio:after {
+	top: 6px;
+	left: 6px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #FFF;
+}
+
+.dropdown-item:hover ,.dropdown-item:active {
+    background: #DF0134;
+    color: #FFF;
+}
+
+#input-sampleRate {
+	display: inline;
+}
+
+#btn-resample {
+	margin-top: -0.3rem;
+}
+
+canvas {
+    border: 1px solid #DF0134;
+}
+
+div div div {
+    display: inline-block;
+    margin-right: 10px;
+}
