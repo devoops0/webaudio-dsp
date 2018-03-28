@@ -4,7 +4,7 @@
 
 - Clone the repo
 ```bash
-	git clone https://github.com/selsbeck/web-audio-dsp.git
+	git clone https://github.com/selsbeck/webaudio-dsp.git
 ```
 - Place some audio-samples in `assets/audio`
 - Add the names of the soundfiles to `soundFiles[]` in `assets/js/audio.js`
