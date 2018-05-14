@@ -71,7 +71,7 @@ function init() {
     // diverse optical and functional setup
 	$('#soundList .dropdown-item').click(selectSound);
 
-	$('.shapingChooser label').click(setShaping);
+	$('#shapingChooser label').click(setShaping);
 
     $('#graphChooser .dropdown-item').click(setGraphType);
     
