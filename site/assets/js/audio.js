@@ -320,6 +320,7 @@ function setFilter(type) {
 		case "lowPass": 
 	shaper.connect(filter);
 	filter.connect(analyser);
+	}
 }
 
 // Whenever the user clicks a dropdown-option, the corresponding sound
