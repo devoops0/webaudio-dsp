@@ -2,16 +2,6 @@ var selectedSound, ampslid, pbRateSlid, pbRate, soundId, drawVisual, graphType =
 var context;
 var ren;
 var soundFiles = [
-            'bach.wav',
-            'balls.mp3',
-            'brandt.wav',
-            'cheering.mp3',
-            'europahymne.wav',
-            'maus.wav',
-            'offer.mp3',
-            'siren.mp3',
-            'sine.mp3',
-            'sweep.wav',
         ];
 var sounds = new Array();
 var gainNode;
