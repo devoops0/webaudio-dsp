@@ -64,7 +64,7 @@ function init() {
 	}
 
 	// connect nodes together and then connect them to destination
-    // so audio flows: input -> gainNode -> shaper -> filter -> analyser -> context.destination(computer boxes)
+    // so audio flows: input -> gainNode -> shaper -> analyser -> context.destination(computer boxes)
 	gainNode.connect(shaper);
 	shaper.connect(analyser);
 
@@ -72,8 +72,6 @@ function init() {
 	$('#soundList .dropdown-item').click(selectSound);
 
 	$('.shapingChooser label').click(setShaping);
-
-	$('.filterChooser label').click(listenerFilterChooser);
 
     $('#graphChooser .dropdown-item').click(setGraphType);
     
@@ -290,26 +288,6 @@ function setShaping() {
 		shaping = "clipping";
 	} else if($(this)[0].textContent.includes("Wrapping")) {
 		shaping = "wrapping";
-	}
-}
-
-function listenerFilterChooser() {
-	switch($(this)[0].textContent) {
-		case "lowPass": setFilter(lowPass); break;
-		case "highPass": setFilter(highPass); break;
-		case "lowShelf": setFilter(lowShelf); break;
-		case "highShelf": setFilter(highShelf); break;
-		default: console.log("something wrong with filter....");
-	}
-}
-
-function setFilter(type) {
-	shaper.disconnect();
-	filter = createBiquadFilter();
-	switch(type) {
-		case "lowPass": 
-	shaper.connect(filter);
-	filter.connect(analyser);
 	}
 }
 
