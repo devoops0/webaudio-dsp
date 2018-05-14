@@ -1,7 +1,17 @@
-var selectedSound, ampslid, pbRateSlid, soundId, graphType = "sinewave", playing = "unplayed", shaping = "clipping";
-var foo;
+var selectedSound, ampslid, pbRateSlid, pbRate, soundId, drawVisual, graphType = "sinewave", playing = "unplayed", shaping = "clipping", uploaded = false;
+var context;
 var ren;
 var soundFiles = [
+            'bach.wav',
+            'balls.mp3',
+            'brandt.wav',
+            'cheering.mp3',
+            'europahymne.wav',
+            'maus.wav',
+            'offer.mp3',
+            'siren.mp3',
+            'sine.mp3',
+            'sweep.wav',
         ];
 var sounds = new Array();
 var gainNode;
@@ -64,60 +74,109 @@ function init() {
 	}
 
 	// connect nodes together and then connect them to destination
-    // so audio flows: input -> gainNode -> shaper -> analyser -> context.destination(computer boxes)
+    // so audio flows: input -> gainNode -> shaper -> filter -> analyser -> context.destination(computer boxes)
 	gainNode.connect(shaper);
-    shaper.connect(analyser);
-	analyser.connect(context.destination);
+	shaper.connect(analyser);
 
     // diverse optical and functional setup
-	$('#checkboxes label').click(setShaping);
-
 	$('#soundList .dropdown-item').click(selectSound);
 
-    $('#graphChooser .dropdown-item').click(setGraphType);
+	$('.shapingChooser label').click(setShaping);
 
-    ampslid = $('#ampslider').bootstrapSlider({
+	$('.filterChooser label').click(listenerFilterChooser);
+
+    $('#graphChooser .dropdown-item').click(setGraphType);
+    
+    // init amplification slider and set on-slide function
+    ampslid = $('#ampslider').slider({
         reversed: true
     });
     ampslid.on('slide', updateAmpVal);
 
-    pbRateSlid = $('#pbRateSlider').bootstrapSlider({});
+    // init playbackRate slider and set on-slide function
+    pbRateSlid = $('#pbRateSlider').slider();
     pbRateSlid.on('slide', updatePbRate);
 
-    // document.getElementById('samplerate').placeholder = context.sampleRate;
-    document.getElementById('default-samplerate').innerHTML = context.sampleRate + ' Hz';
+    // show default samplerate in input-field for samplerate
+    $('#input-sampleRate').attr("placeholder",context.sampleRate);
+
+    // file upload listener
+    $('input[name="fileSoundSel"]').on('change', listenerLoadUploadedBuffer);
 
     // adaptive canvas-size for graph
     var canvasMinHeight = 250;
     var canvasMinWidth = 600;
-    var canvasWidth = $('canvas').parent().width();
-    var canvasHeight = $('canvas').parent().height();
-    canvasWidth >= canvasMinWidth ? $('#wave').attr('width',canvasWidth) : $('#wave').attr('width', canvasMinWidth);
-    canvasHeight >= canvasMinHeight ? $('#wave').attr('height',canvasHeight) : $('#wave').attr('height', canvasMinHeight);
+    var canvasWidth = $('#wave').width();
+    var canvasHeight = $('#wave').height();
+    canvasWidth >= canvasMinWidth ? $('#graph').attr('width',canvasWidth) : $('#graph').attr('width', canvasMinWidth);
+    canvasHeight >= canvasMinHeight ? $('#graph').attr('height',canvasHeight) : $('#graph').attr('height', canvasMinHeight);
+}
+
+function listenerLoadUploadedBuffer() {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        createInstanceFromUploadedFile(this.result).then(
+            function() {
+                selectedSound.connect(gainNode);
+            }
+        );
+    };
+    reader.readAsArrayBuffer(this.files[0]);
+    uploaded = true;
+}
+
+function loadUploadedBuffer() {
+    var sound;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        createInstanceFromUploadedFile(this.result).then(
+            function() {
+                selectedSound.connect(gainNode);
+            }
+        );
+    };
+    reader.readAsArrayBuffer($('input[name="fileSoundSel"]')[0].files[0]);
+    uploaded = true;
+    return sound;
 }
 
 function setGraphType() {
     graphType = $(this).text();
-    console.log(graphType);
     $('#btn-graphSelect').text(graphType);
-    visualize();
+    if(playing == "playing") {
+        cancelAnimationFrame(drawVisual);
+        visualize();
+    }
 }
 
 function visualize() {
-	// canvas
-	var canvas = document.getElementById('wave');
-	var canvasCtx = canvas.getContext('2d');
+	// wave-wrapper
+	var wrapper = document.getElementById('wave');
+	// var canvasCtx = canvas.getContext('2d');
 
-	var WIDTH = canvas.width;
-	var HEIGHT = canvas.height;
+	var WIDTH = wrapper.width;
+	var HEIGHT = wrapper.height;
 	
     if(graphType == "sinewave") {
+        var canvas, canvasCtx;
+		// set up canvas
+        if (document.getElementById("graph") == null) {
+            canvas = document.createElement("canvas");
+            canvas.id = "graph";
+            wrapper.appendChild(canvas);
+            canvas = document.getElementById("graph");
+            canvasCtx = canvas.getContext('2d');
+        } else {
+            canvas = document.getElementById("graph");
+            canvasCtx = canvas.getContext('2d');
+        }
+
         // analyser config
         analyser.fftSize = 2048;
         var bufferLength = analyser.frequencyBinCount;
         var dataArray = new Float32Array(bufferLength);
 
-        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
         function draw() {
             drawVisual = requestAnimationFrame(draw);       // keep drawing forever
@@ -130,7 +189,7 @@ function visualize() {
             // graph-canvas-background
             // canvasCtx.fillStyle = '#D2D5D3';
             canvasCtx.fillStyle = '#FFF';
-            canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
             // graph itself
             canvasCtx.lineWidth = 2;
@@ -138,16 +197,16 @@ function visualize() {
 
             canvasCtx.beginPath();
 
-            var sliceWidth = WIDTH * 1.0 / bufferLength;
+            var sliceWidth = canvas.width * 1.0 / bufferLength;
             var x = 0;
 
             for(var i = 0; i < bufferLength; i++) {
 
                 var v = dataArray[i];// / 128.0;
 				if(v > 1) {
-					var y = HEIGHT/2;
+					var y = canvas.height/2;
 				} else {
-					var y = (1 - v) * HEIGHT/2;
+					var y = (1 - v) * canvas.height/2;
 				}
 
                 if(i === 0) {
@@ -157,45 +216,82 @@ function visualize() {
                 }
 
 				x += sliceWidth;
-                // console.log('x: ' + x + 'y: ' + y);
             }
 
-            canvasCtx.lineTo(canvas.width, canvas.height/2);
+            canvasCtx.lineTo(canvasCtx.width, canvasCtx.height/2);
             canvasCtx.stroke();
         };
 
         draw();
     } else if(graphType == "frequencybars") {
-        analyser.fftSiez = 256;
+        
+		// set up canvas
+        if (document.getElementById("graph") == null) {
+            canvas = document.createElement("canvas");
+            canvas.id = "graph";
+            wrapper.appendChild(canvas);
+            canvas = document.getElementById("graph");
+            canvasCtx = canvas.getContext('2d');
+        } else {
+            canvas = document.getElementById("graph");
+            canvasCtx = canvas.getContext('2d');
+        }
+
+        analyser.fftSize = 2048;
+        // analyser.fftSize = 512;
         var bufferLengthAlt = analyser.frequencyBinCount;
-        console.log(bufferLengthAlt);
         var dataArrayAlt = new Uint8Array(bufferLengthAlt);
+		var binRange = (selectedSound.buffer.sampleRate / 2) / analyser.frequencyBinCount;
+		dataPoints =  new Array(bufferLengthAlt);
+        var labels = new Array(bufferLengthAlt);
 
-        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+        var chart = new Chart(canvasCtx, {
+            type: 'bar',
 
-        var drawAlt = function() {
-            drawVisual = requestAnimationFrame(drawAlt);
+            data: {
+                labels: labels,
+                // labels: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000],
+                datasets: [{
+                    label: "Frequency Data",
+                    backgroundColor: '#DF0134',
+                    borderColor: '#DF0134',
+                    data: dataPoints,
+                }]
+            },
 
-            analyser.getByteFrequencyData(dataArrayAlt);
-
-            canvasCtx.fillStyle = '#FFFFFF';
-            canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-
-            var barWidth = (WIDTH / bufferLengthAlt) * 2.5;
-            var barHeight;
-            var x = 0;
-
-            for (var i = 0; i < bufferLengthAlt; i++) {
-                barHeight = dataArrayAlt[i];
-
-                // canvasCtx.fillstyle = 'rgb(' + (barHeight+100) + ',50,50)';
-                canvasCtx.fillStyle = '#DF0134';
-                canvasCtx.fillRect(x, HEIGHT-barHeight, barWidth, barHeight);
-
-                x+= barWidth + 1;
+            options: {
+                color: '#DF0134',
+                events: ['click'],
+                scales: {
+                    xAxes: [{
+                        id: 'Hz',
+                        ticks: {
+                            maxTicksLimit: 20,
+                            callback: function(value, index, values) {
+                                return Number(value).toFixed(0);
+                            }
+                        }
+                    }]
+                },
             }
-        };
-        drawAlt();
+        });
+
+		var drawBars = function() {
+			drawVisual = requestAnimationFrame(drawBars);
+			analyser.getByteFrequencyData(dataArrayAlt);
+
+            for (var i = 0; i < analyser.frequencyBinCount; i++) {
+                labels[i] = i*binRange;
+             }
+
+			for (var i = 0; i < dataArrayAlt.length; i++) {
+                chart.data.datasets[0].data[i] = dataArrayAlt[i];
+			}
+
+            chart.update();
+		}
+		drawBars();
+        dataPoints = [];
     }
 }
 
@@ -207,6 +303,25 @@ function setShaping() {
 	}
 }
 
+function listenerFilterChooser() {
+	switch($(this)[0].textContent) {
+		case "lowPass": setFilter(lowPass); break;
+		case "highPass": setFilter(highPass); break;
+		case "lowShelf": setFilter(lowShelf); break;
+		case "highShelf": setFilter(highShelf); break;
+		default: console.log("something wrong with filter....");
+	}
+}
+
+function setFilter(type) {
+	shaper.disconnect();
+	filter = createBiquadFilter();
+	switch(type) {
+		case "lowPass": 
+	shaper.connect(filter);
+	filter.connect(analyser);
+}
+
 // Whenever the user clicks a dropdown-option, the corresponding sound
 // is loaded into selectedSound
 // selectedSound as Source is then connected to the first Node (gainNode) of our 'AudioGraph'
@@ -215,13 +330,37 @@ function selectSound() {
     selectedSound = createInstance(soundId);
 	selectedSound.connect(gainNode);
     $('#btn-soundSelect').text(soundId);
+    resetSliders();
+    uploaded = false;
+}
+
+// Reset sliders to their initial value
+function resetSliders() {
+    // amplification slider
+    ampslid.slider('setValue', 1);
+    $('#amp-value').text("1");
+
+    // playback rate slider
+    pbRateSlid.slider('setValue', 1);
+    $('#pbRate').text("1");
+
+    updateAmpVal();
+    updatePbRate();
 }
 
 // When the sound is finished, reload it so it can be played again.
 // Otherwise, the user would have to select the sound from the dropdown again
 function reloadSound() {
-    selectedSound = createInstance(soundId);
-	selectedSound.connect(gainNode);
+    analyser.disconnect();
+    cancelAnimationFrame(drawVisual);
+    console.log("playback end");
+    if(uploaded == false) {
+        selectedSound = null;
+        selectedSound = createInstance(soundId);
+        selectedSound.connect(gainNode);
+    } else {
+        loadUploadedBuffer();
+    }
 	playing = "unplayed";
     $('#btn-playPause i:first-child').replaceWith(
         '<i class="fas fa-play"></i>');
@@ -237,10 +376,29 @@ function createInstance(soundId) {
     return sound;
 }
 
+function createInstanceFromUploadedFile(buf) {
+    // context.decodeAudioData(buf, function(buf) {
+    //     sound.buffer = buf;
+    //     sound.onended = reloadSound;
+    // }, function(e) {
+    //     console.log("Error with decoding audio data" + e.err);
+    // }
+    // );
+    
+    selectedSound = context.createBufferSource();
+    const prom = context.decodeAudioData(buf).then(function(decodedData) {
+        selectedSound.buffer = decodedData;
+        selectedSound.onended = reloadSound;
+    });
+	while(prom == undefined);
+    return prom;
+}
+
 // Whenever the user changes the Amplifier-slider, the gain-Value is increased,
 // so the sound is effectively amplified
 function updateAmpVal() {
-    var ampVal = ampslid.val();
+    // var ampVal = ampslid.val();
+    var ampVal = ampslid.slider('getValue');
 	gainNode.gain.setValueAtTime(ampVal, context.currentTime);
     $('#amp-value').text(ampVal);
 }
@@ -249,7 +407,8 @@ function updateAmpVal() {
 // Effectively we're increasing and decreasing the frequency of the sound playing.
 function updatePbRate() {
     if ( selectedSound ) {
-    var pbRate = pbRateSlid.val();
+    // pbRate = pbRateSlid.val();
+    pbRate = pbRateSlid.slider('getValue');
     selectedSound.playbackRate.setValueAtTime(pbRate, context.currentTime)
     $('#pbRate').text(pbRate);
     } else {
@@ -265,18 +424,24 @@ function playPauseSound() {
     }
     // TODO: This is dirty: Im managing the playState with a global variable
     if (playing === "unplayed") {
+        analyser.connect(context.destination);
         selectedSound.start(0);
         setPauseIcon();
         playing = "playing";
+        visualize();
     } else if (playing === "playing") {
         context.suspend().then(function() {
+            cancelAnimationFrame(drawVisual);
+            analyser.disconnect();
             setPlayIcon();
             playing = "paused"
         });
     } else if (playing === "paused") {
+        analyser.connect(context.destination);
         context.resume().then(function() {
             setPauseIcon();
             playing = "playing"
+            visualize();
         });
     }
 }
@@ -287,6 +452,9 @@ function stopSound() {
         return
     }
     selectedSound.stop();
+    cancelAnimationFrame(drawVisual);
+    analyser.disconnect();
+    console.log("disconnected");
 	reloadSound();
 }
 
@@ -315,7 +483,6 @@ function resampleSound() {
     bufferSource.connect(offlineContext.destination);
     bufferSource.start(0);
     offlineContext.startRendering().then(function(renderedBuffer){
-        console.log(renderedBuffer.getChannelData(0));
         selectedSound.buffer = renderedBuffer;
     });
 }
